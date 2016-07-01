@@ -1,0 +1,59 @@
+html, body {
+
+}
+
+.message {
+  white-space: pre;
+  font-family: monospace;
+}
+
+/*.message .color {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 1px solid #cdcdcd;
+}*/
+
+.message .color-white {
+  color: #ffffff;
+}
+
+.message .color-red {
+  color: #ff0000;
+}
+
+.message .color-green {
+  color: #00ff00;
+}
+
+.message .color-blue {
+  color: #0000ff;
+}
+
+.message .color-light-blue {
+  color: #7f7fff;
+}
+
+.message .color-pink {
+  color: #ff7f7f;
+}
+
+.message .color-yellow {
+  color: #ffff00;
+}
+
+.message .color-black {
+  color: #000000;
+}
+
+/*.message .space-strip {
+  color: #cdcdcd;
+}*/
+
+.message .wait-keypress-break {
+  display: block;
+}
+
+.message .marker {
+  background: #cdcdcd;
+}

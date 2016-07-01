@@ -91,6 +91,15 @@ function updateMsgList() {
   //for (var i = 0; i < 50; i++) {
     var length = msgTable[i + 1].offset - msgTable[i].offset;
     msgTable[i].message = reader.readMessage(msgTable[i].offset, length);
-    msgList.appendChild(msgTable[i].message);
+
+    var li = document.createElement('li');
+    li.classList.add('message-list-item');
+    li.dataset.msgIndex = i;
+    li.addEventListener('click', function (e) {
+      editMessage(msgTable[e.target.dataset.msgIndex]);
+    });
+    li.innerText = '0x' + hexString(msgTable[i].id, 4);
+
+    msgList.appendChild(li);
   }
 }

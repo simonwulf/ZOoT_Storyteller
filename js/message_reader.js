@@ -7,7 +7,7 @@ function MessageReader(data) {
   this.readMessage = function (offset, length) {
     
     var end = offset + length;
-    var element = document.createElement('li');
+    var element = document.createElement('div');
     var text = '';
 
     currentColor = 'white';
@@ -71,15 +71,6 @@ function MessageReader(data) {
     element.innerHTML = text;
     return element;
   };
-
-  function hexString(num, padding) {
-    padding = padding || 0;
-    string = num.toString(16);
-    while (string.length < padding) {
-      string = '0' + string;
-    }
-    return string;
-  }
 
   function renderSpan(classes, content) {
     content = content || '';

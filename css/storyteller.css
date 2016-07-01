@@ -1,5 +1,43 @@
 html, body {
+  width: 100%;
+  height: 100%;
+}
 
+.main-surface {
+  display: flex;
+  position: absolute;
+  top: 60px;
+  bottom: 0;
+  width: 100%;
+}
+
+#message-list {
+  padding: 0 0 40px 0;
+  margin: 0;
+  width: 320px;
+  border: 1px solid #cdcdcd;
+  overflow-y: scroll;
+  font-size: 14px;
+  font-family: monospace;
+}
+
+#editor {
+  background: #ffff7f;
+  flex-grow: 1;
+}
+
+.message-list-item {
+  list-style: none;
+  padding: 2px 4px;
+}
+
+.message-list-item:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.message-list-item:nth-child(even) {
+  background: #efefef;
 }
 
 .message {

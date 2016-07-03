@@ -12,6 +12,8 @@ function MessageReader(data) {
 
     currentColor = 'white';
 
+    element.setAttribute('contenteditable', '');
+    element.setAttribute('spellCheck', false);
     element.classList.add('message');
 
     while (offset < end) {

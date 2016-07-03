@@ -2,17 +2,52 @@
 <html>
 <head>
 	<title>ZOoT Storyteller</title>
-  <link rel="stylesheet" type="text/css" href="css/normalize.css">
+  <!--link rel="stylesheet" type="text/css" href="css/normalize.css"-->
   <link rel="stylesheet" type="text/css" href="css/storyteller.css">
   <meta charset="utf-8">
 </head>
 <body>
-  <div><label for="message-table-input">Message table:</label> <input type="file" id="message-table-input"></div>
-  <div><label for="message-data-input">Message data:</label> <input type="file" id="message-data-input"></div>
+  <header class="top-header">
+    <h1>ZOoT Storyteller</h1>
+    <input type="file" id="message-table-input" hidden>
+    <input type="file" id="message-data-input" hidden>
+    <button class="load-btn">Load message <strong>table</strong> and <strong>data</strong></button>
+  </header>
   <div class="main-surface">
-    <ol id="message-list">
+    <ol class="message-list">
     </ol>
-    <div id="editor">
+    <div class="editor">
+      <div class="message-toolbar">
+        <label class="message-tool">Message ID: <input type="text" id="message-id-input"></label>
+        <label class="message-tool">Box type:
+          <select id="message-type-select">
+            <option>Black</option>
+            <option>Wood</option>
+            <option>Ocarina/Blue auto</option>
+            <option>None</option>
+            <option>None - black text</option>
+          </select>
+        </label>
+        <label class="message-tool">Box position:
+          <select id="message-position-select">
+            <option>Top/bottom auto</option>
+            <option>Top</option>
+            <option>Middle</option>
+            <option>Bottom</option>
+          </select>
+        </label>
+        <div class="message-tool color-tool">Set color:
+          <button class="color-white"></button>
+          <button class="color-red"></button>
+          <button class="color-green"></button>
+          <button class="color-blue"></button>
+          <button class="color-light-blue"></button>
+          <button class="color-pink"></button>
+          <button class="color-yellow"></button>
+          <button class="color-black"></button>
+        </div>
+      </div>
+      <div class="message-container"></div>
     </div>
   </div>
   <script type="text/javascript" src="js/utils.js"></script>

@@ -4,7 +4,8 @@
 
 var msgTableInput = document.getElementById('message-table-input');
 var msgDataInput = document.getElementById('message-data-input');
-var msgList = document.getElementById('message-list');
+var msgList = document.querySelector('.message-list');
+var loadBtn = document.querySelector('.load-btn');
 
 var msgTableData = null;
 var msgData = null;
@@ -14,6 +15,11 @@ var msgTable;
 function handleReadError(error) {
   console.error('An error occured while reading: ' + error)
 }
+
+loadBtn.addEventListener('click', function (e) {
+  msgTableInput.click();
+  msgDataInput.click();
+});
 
 msgTableInput.addEventListener('change', function (e) {
   if (e.target.files.length == 0) return;

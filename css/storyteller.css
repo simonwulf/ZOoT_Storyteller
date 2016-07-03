@@ -45,6 +45,7 @@ body {
 .message-list-item {
   list-style: none;
   padding: 2px 4px;
+  white-space: pre;
 }
 
 .message-list-item:hover {
@@ -125,6 +126,7 @@ body {
 .message .wait-keypress-break {
   display: block;
   border-top: solid 1px #cdcdcd;
+  margin: 12px 0;
 }
 
 .message .marker {

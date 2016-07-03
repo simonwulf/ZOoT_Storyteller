@@ -8,7 +8,9 @@ function MessageReader(data) {
     
     var end = offset + length;
     var element = document.createElement('div');
-    var text = '';
+    var full = '';
+    var snippet = '';
+    var longSnippet = false;
 
     currentColor = 'white';
 
@@ -20,58 +22,70 @@ function MessageReader(data) {
 
       var standardChar = false;
       if (msgData[offset] >= 0x7f && msgData[offset] <= 0xab) {
-        text += renderSpecial(msgData[offset]);
+        full += renderSpecial(msgData[offset]);
       } else {
         switch (msgData[offset]) {
           case 0x00: break;
           case 0x03: break;
             
-          case 0x01: text += '<br>'; break;
+          case 0x01: full += '<br>'; break;
             
-          case 0x02: text += renderSpan('marker end', '[end]'); break;
-          case 0x0a: text += renderSpan('marker shop-keep-open', '[0x0a]'); break;
-          case 0x0b: text += renderSpan('marker wait-external', '[wait-external]'); break;
-          case 0x10: text += renderSpan('marker ocarina', '[ocarina]'); break;
-          case 0x16: text += renderSpan('marker byte-result-marathon', '[marathon-score]'); break;
-          case 0x17: text += renderSpan('marker byte-result-horse-race', '[horse-race-score]'); break;
-          case 0x18: text += renderSpan('marker byte-result-horseback-archery', '[horseback-archery-score]'); break;
-          case 0x19: text += renderSpan('marker byte-result-skulltula-count', '[gold-skulltula-count]'); break;
-          case 0x1a: text += renderSpan('marker prevent-b-skip', '[prevent-b-skip]'); break;
-          case 0x1b: text += renderSpan('marker option-two', '[2-options]'); break;
-          case 0x1c: text += renderSpan('marker option-three', '[3-options]'); break;
-          case 0x1d: text += renderSpan('marker byte-result-fish', '[largest-fish]'); break;
-          case 0x1f: text += renderSpan('marker current-time', '[time-of-day]'); break;
+          case 0x02: full += renderSpan('marker end', '[end]'); break;
+          case 0x0a: full += renderSpan('marker shop-keep-open', '[0x0a]'); break;
+          case 0x0b: full += renderSpan('marker wait-external', '[wait-external]'); break;
+          case 0x10: full += renderSpan('marker ocarina', '[ocarina]'); break;
+          case 0x16: full += renderSpan('marker byte-result-marathon', '[marathon-score]'); break;
+          case 0x17: full += renderSpan('marker byte-result-horse-race', '[horse-race-score]'); break;
+          case 0x18: full += renderSpan('marker byte-result-horseback-archery', '[horseback-archery-score]'); break;
+          case 0x19: full += renderSpan('marker byte-result-skulltula-count', '[gold-skulltula-count]'); break;
+          case 0x1a: full += renderSpan('marker prevent-b-skip', '[prevent-b-skip]'); break;
+          case 0x1b: full += renderSpan('marker option-two', '[2-options]'); break;
+          case 0x1c: full += renderSpan('marker option-three', '[3-options]'); break;
+          case 0x1d: full += renderSpan('marker byte-result-fish', '[largest-fish]'); break;
+          case 0x1f: full += renderSpan('marker current-time', '[time-of-day]'); break;
           
-          case 0x04: text += renderSpan('wait-keypress-break'); break;
-          case 0x0d: text += renderSpan('wait-keypress-continue', ' >> '); break;
+          case 0x04: full += renderSpan('wait-keypress-break'); break;
+          case 0x0d: full += renderSpan('wait-keypress-continue', ' >> '); break;
 
-          case 0x05: text += renderColor(msgData[++offset]); break;
-          case 0x06: text += renderSpaceStrip(msgData[++offset]); break;
-          case 0x07: text += renderMsgLink(msgData[++offset] << 8 | msgData[++offset]); break;
-          case 0x08: text += renderInstant(true); break;
-          case 0x09: text += renderInstant(false); break;
-          case 0x0c: text += renderDelay(msgData[++offset]); break;
-          case 0x0e: text += renderFadeAndWait(0x0e, msgData[++offset]); break;
-          case 0x0f: text += renderPlayerName(); break;
-          case 0x11: text += renderFadeAndWait(0x11); break;
-          case 0x12: text += renderAudioCue(msgData[++offset] << 8 | msgData[++offset]); break;
-          case 0x13: text += renderItemIcon(msgData[++offset]); break;
-          case 0x14: text += renderLetterDelay(msgData[++offset]); break;
-          case 0x15: text += renderBGLoader(msgData[++offset], msgData[++offset], msgData[++offset]); break;
-          case 0x1e: text += renderResult(msgData[++offset]); break;
+          case 0x05: full += renderColor(msgData[++offset]); break;
+          case 0x06: full += renderSpaceStrip(msgData[++offset]); break;
+          case 0x07: full += renderMsgLink(msgData[++offset] << 8 | msgData[++offset]); break;
+          case 0x08: full += renderInstant(true); break;
+          case 0x09: full += renderInstant(false); break;
+          case 0x0c: full += renderDelay(msgData[++offset]); break;
+          case 0x0e: full += renderFadeAndWait(0x0e, msgData[++offset]); break;
+          case 0x0f: full += renderPlayerName(); break;
+          case 0x11: full += renderFadeAndWait(0x11); break;
+          case 0x12: full += renderAudioCue(msgData[++offset] << 8 | msgData[++offset]); break;
+          case 0x13: full += renderItemIcon(msgData[++offset]); break;
+          case 0x14: full += renderLetterDelay(msgData[++offset]); break;
+          case 0x15: full += renderBGLoader(msgData[++offset], msgData[++offset], msgData[++offset]); break;
+          case 0x1e: full += renderResult(msgData[++offset]); break;
           default:
             standardChar = true;
         }
       }
 
-      if (standardChar)
-        text += String.fromCharCode(msgData[offset]);
+      if (standardChar) {
+        var char = String.fromCharCode(msgData[offset]);
+        full += char;
+        if (snippet.length < 25)
+          snippet += char;
+        else
+          longSnippet = true;
+      }
 
       offset++;
     }
 
-    element.innerHTML = text;
-    return element;
+    if (longSnippet)
+      snippet = snippet.substr(0, snippet.length-3) + '...';
+
+    element.innerHTML = full;
+    return {
+      full: element,
+      snippet: snippet
+    }
   };
 
   function renderSpan(classes, content) {

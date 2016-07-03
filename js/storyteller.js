@@ -96,7 +96,8 @@ function updateMsgList() {
   for (var i = 0; i < msgTable.length - 1; i++) {
   //for (var i = 0; i < 50; i++) {
     var length = msgTable[i + 1].offset - msgTable[i].offset;
-    msgTable[i].message = reader.readMessage(msgTable[i].offset, length);
+    var message = reader.readMessage(msgTable[i].offset, length);
+    msgTable[i].message = message.full;
 
     var li = document.createElement('li');
     li.classList.add('message-list-item');
@@ -104,7 +105,7 @@ function updateMsgList() {
     li.addEventListener('click', function (e) {
       editMessage(msgTable[e.target.dataset.msgIndex]);
     });
-    li.innerText = '0x' + hexString(msgTable[i].id, 4);
+    li.innerText = '0x' + hexString(msgTable[i].id, 4) + ' - ' + message.snippet;
 
     msgList.appendChild(li);
   }

@@ -30,23 +30,23 @@ function MessageReader(data) {
             
           case 0x01: full += '<br>'; break;
             
-          case 0x02: full += renderSpan('marker end', '[end]'); break;
-          case 0x0a: full += renderSpan('marker shop-keep-open', '[0x0a]'); break;
-          case 0x0b: full += renderSpan('marker wait-external', '[wait-external]'); break;
-          case 0x10: full += renderSpan('marker ocarina', '[ocarina]'); break;
-          case 0x16: full += renderSpan('marker byte-result-marathon', '[marathon-score]'); break;
-          case 0x17: full += renderSpan('marker byte-result-horse-race', '[horse-race-score]'); break;
-          case 0x18: full += renderSpan('marker byte-result-horseback-archery', '[horseback-archery-score]'); break;
-          case 0x19: full += renderSpan('marker byte-result-skulltula-count', '[gold-skulltula-count]'); break;
-          case 0x1a: full += renderSpan('marker prevent-b-skip', '[prevent-b-skip]'); break;
-          case 0x1b: full += renderSpan('marker option-two', '[2-options]'); break;
-          case 0x1c: full += renderSpan('marker option-three', '[3-options]'); break;
-          case 0x1d: full += renderSpan('marker byte-result-fish', '[largest-fish]'); break;
-          case 0x1f: full += renderSpan('marker current-time', '[time-of-day]'); break;
-          
-          case 0x04: full += renderSpan('wait-keypress-break'); break;
-          case 0x0d: full += renderSpan('wait-keypress-continue', ' >> '); break;
+          case 0x02: break; // end
+          case 0x0a: full += renderShortcode('shp'); break; // shop-keep-open
+          case 0x0b: full += renderShortcode('we'); break; // wait-external
+          case 0x0d: full += renderShortcode('wkc'); break; // wait-keypress-continue
+          case 0x0f: full += renderShortcode('Link'); break; // player-name
+          case 0x10: full += renderShortcode('oca'); break; // ocarina
+          case 0x16: full += renderShortcode('scm'); break; // byte-result-marathon
+          case 0x17: full += renderShortcode('schr'); break; // byte-result-horse-race
+          case 0x18: full += renderShortcode('scha'); break; // byte-result-horseback-archery
+          case 0x19: full += renderShortcode('scs'); break; // byte-result-skulltula-count
+          case 0x1a: full += renderShortcode('pbs'); break; // prevent-b-skip
+          case 0x1b: full += renderShortcode('o2'); break; // option-two
+          case 0x1c: full += renderShortcode('o3'); break; // option-three
+          case 0x1d: full += renderShortcode('scf'); break; // byte-result-fish
+          case 0x1f: full += renderShortcode('tod'); break; // current-time
 
+          case 0x04: full += renderBoxBreak(); break; // wait-keypress-break
           case 0x05: full += renderColor(msgData[++offset]); break;
           case 0x06: full += renderSpaceStrip(msgData[++offset]); break;
           case 0x07: full += renderMsgLink(msgData[++offset] << 8 | msgData[++offset]); break;
@@ -54,7 +54,6 @@ function MessageReader(data) {
           case 0x09: full += renderInstant(false); break;
           case 0x0c: full += renderDelay(msgData[++offset]); break;
           case 0x0e: full += renderFadeAndWait(0x0e, msgData[++offset]); break;
-          case 0x0f: full += renderPlayerName(); break;
           case 0x11: full += renderFadeAndWait(0x11); break;
           case 0x12: full += renderAudioCue(msgData[++offset] << 8 | msgData[++offset]); break;
           case 0x13: full += renderItemIcon(msgData[++offset]); break;
@@ -88,9 +87,22 @@ function MessageReader(data) {
     }
   };
 
-  function renderSpan(classes, content) {
-    content = content || '';
-    return '<span class="' + classes + '">' + content + '</span>';
+  // function renderSpan(classes, content) {
+  //   content = content || '';
+  //   return '<span class="' + classes + '">' + content + '</span>';
+  // }
+
+  function renderShortcode(name, value) {
+    var code = '<span class="shortcode" contenteditable="false">'
+    code += '[' + name;
+    if (arguments.length > 1)
+      code += ':' + '<span contenteditable>' + value + '</span>';
+    code += ']</span>';
+    return code;
+  }
+
+  function renderBoxBreak() {
+    return '<span class="wait-box-break"></span>';
   }
 
   function renderColor(color) {
@@ -121,55 +133,62 @@ function MessageReader(data) {
     for (var i = 0; i < amount; i++) {
       spaces += '-';
     }*/
-    return renderSpan('marker space-strip', '[spaces:0x' + hexString(amount, 2) + ']');
+    // return renderSpan('marker space-strip', '[spaces:0x' + hexString(amount, 2) + ']');
+      return renderShortcode('sp', hexString(amount, 2));
   }
 
   function renderMsgLink(msgId) {
-    return '<a href="#">0x' + hexString(msgId, 4) + '</a>';
+    // return '[link-to:0x' + hexString(msgId, 4) + ']';
+    return renderShortcode('lnk');
   }
 
   function renderInstant(instant) {
-    return renderSpan(
-      'marker ' + (instant ? 'instant-on' : 'instant-off'),
-      '[' + (instant ? 'instant-on' : 'instant-off') + ']'
-    );
+    // return renderSpan(
+    //   'marker ' + (instant ? 'instant-on' : 'instant-off'),
+    //   '[' + (instant ? 'instant-on' : 'instant-off') + ']'
+    // );
+    return renderShortcode(instant ? 'in1' : 'in0' );
   }
 
   function renderDelay(delay) {
-    return renderSpan('marker delay', '[delay:0x' + hexString(delay, 2) + ']');
+    // return renderSpan('marker delay', '[delay:0x' + hexString(delay, 2) + ']');
+      return renderShortcode('dly', hexString(delay, 2));
   }
 
   function renderFadeAndWait(command, delay) {
-    return renderSpan('marker fade-and-wait', '[fade-and-wait]');
-  }
-
-  function renderPlayerName() {
-    return renderSpan('marker player-name', '[Link]');
+    // return renderSpan('marker fade-and-wait', '[fade-and-wait]');
+      return renderShortcode('fdw', hexString(delay, 2));
   }
 
   function renderAudioCue(effect) {
-    return renderSpan('marker audio-cue', '[audio:0x' + hexString(effect, 4) + ']');
+    // return renderSpan('marker audio-cue', '[audio:0x' + hexString(effect, 4) + ']');
+      return renderShortcode('aud', hexString(effect, 4));
   }
 
   function renderItemIcon(item) {
-    return renderSpan('marker item-icon', '[item:0x' + hexString(item, 2) + ']');
+    // return renderSpan('marker item-icon', '[item:0x' + hexString(item, 2) + ']');
+      return renderShortcode('itm', hexString(item, 2));
   }
 
   function renderLetterDelay(delay) {
-    return renderSpan('marker delay', '[letter-delay:0x' + hexString(delay, 2) + ']');
+    // return renderSpan('marker delay', '[letter-delay:0x' + hexString(delay, 2) + ']');
+      return renderShortcode('ldly', hexString(delay, 2));
   }
 
   function renderBGLoader(background) {
-    return renderSpan('marker bg-loader', '[load-bg:0x' + hexString(background, 6) + ']');
+    // return renderSpan('marker bg-loader', '[load-bg:0x' + hexString(background, 6) + ']');
+      return renderShortcode('lbg', hexString(background, 6));
   }
 
   function renderResult(minigame) {
-    return renderSpan('marker minigame-result', '[minigame-score:0x' + hexString(minigame, 2) + '}');
+    // return renderSpan('marker minigame-result', '[minigame-score:0x' + hexString(minigame, 2) + '}');
+      return renderShortcode('mgs', hexString(minigame, 2));
   }
 
   function renderSpecial(char) {
     switch (char) {
-      case 0x7f: return renderSpan('marker', '[0x7f]');
+      case 0x7f: // return renderSpan('marker', '[0x7f]');
+        return renderShortcode('0x7f');
       case 0x80: return 'À';
       case 0x81: return 'Á';
       case 0x82: return 'Â';
@@ -201,19 +220,32 @@ function MessageReader(data) {
       case 0x9c: return 'ù';
       case 0x9d: return 'û';
       case 0x9e: return 'ü';
-      case 0x9f: return renderSpan('marker button-icon a-button', '[A]');
-      case 0xa0: return renderSpan('marker button-icon b-button', '[B]');
-      case 0xa1: return renderSpan('marker button-icon c-button', '[C]');
-      case 0xa2: return renderSpan('marker button-icon l-button', '[L]');
-      case 0xa3: return renderSpan('marker button-icon r-button', '[R]');
-      case 0xa4: return renderSpan('marker button-icon z-button', '[Z]');
-      case 0xa5: return renderSpan('marker button-icon c-up-button', '[Cu]');
-      case 0xa6: return renderSpan('marker button-icon c-down-button', '[Cd]');
-      case 0xa7: return renderSpan('marker button-icon c-left-button', '[Cl]');
-      case 0xa8: return renderSpan('marker button-icon c-right-button', '[Cr]');
-      case 0xa9: return renderSpan('marker button-icon down-arrow', '[Dn-arrow]');
-      case 0xaa: return renderSpan('marker button-icon control-stick', '[Stick]');
-      case 0xab: return renderSpan('marker button-icon d-pad', '[D-pad]');
+      case 0x9f: // return renderSpan('marker button-icon a-button', '[A]');
+        return renderShortcode('A');
+      case 0xa0: // return renderSpan('marker button-icon b-button', '[B]');
+        return renderShortcode('B');
+      case 0xa1: // return renderSpan('marker button-icon c-button', '[C]');
+        return renderShortcode('C');
+      case 0xa2: // return renderSpan('marker button-icon l-button', '[L]');
+        return renderShortcode('L');
+      case 0xa3: // return renderSpan('marker button-icon r-button', '[R]');
+        return renderShortcode('R');
+      case 0xa4: // return renderSpan('marker button-icon z-button', '[Z]');
+        return renderShortcode('Z');
+      case 0xa5: // return renderSpan('marker button-icon c-up-button', '[Cu]');
+        return renderShortcode('Cu');
+      case 0xa6: // return renderSpan('marker button-icon c-down-button', '[Cd]');
+        return renderShortcode('Cd');
+      case 0xa7: // return renderSpan('marker button-icon c-left-button', '[Cl]');
+        return renderShortcode('Cl');
+      case 0xa8: // return renderSpan('marker button-icon c-right-button', '[Cr]');
+        return renderShortcode('Cr');
+      case 0xa9: // return renderSpan('marker button-icon down-arrow', '[Dn-arrow]');
+        return renderShortcode('Dn');
+      case 0xaa: // return renderSpan('marker button-icon control-stick', '[Stick]');
+        return renderShortcode('T');
+      case 0xab: // return renderSpan('marker button-icon d-pad', '[D-pad]');
+        return renderShortcode('+');
     }
   }
 }

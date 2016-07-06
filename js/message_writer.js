@@ -1,5 +1,7 @@
 // message_writer.js
 
+'use strict';
+
 // ArrayBuffer.transfer polyfill
 if (typeof ArrayBuffer.transfer == 'undefined') {
   ArrayBuffer.transfer = function (oldBuffer, newByteLength) {

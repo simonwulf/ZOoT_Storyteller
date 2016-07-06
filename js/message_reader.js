@@ -1,7 +1,10 @@
-// message_reader.jsp
+// message_reader.js
+
+'use strict';
 
 function MessageReader(data) {
   
+  var msgData = data;
   var currentColor;
 
   this.readMessage = function (offset, length) {

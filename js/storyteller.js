@@ -2,55 +2,40 @@
 
 'use strict';
 
-var msgTableInput = document.getElementById('message-table-input');
-var msgDataInput = document.getElementById('message-data-input');
-var msgList = document.querySelector('.message-list');
-var loadBtn = document.querySelector('.load-btn');
-var saveBtn = document.querySelector('.save-btn');
+(function () {
 
-function handleReadError(error) {
-  console.error('An error occured while reading: ' + error)
-}
+  var msgTableInput = document.getElementById('message-table-input');
+  var msgDataInput = document.getElementById('message-data-input');
+  var loadBtn = document.querySelector('.load-btn');
+  var saveBtn = document.querySelector('.save-btn');
 
-loadBtn.addEventListener('click', function (e) {
-  msgTableInput.click();
-  msgDataInput.click();
-});
+  var files = [null, null];
+  var editor = new Editor();
+  var fileCount;
 
-saveBtn.addEventListener('click', function (e) {
-  var writer = new MessageWriter();
-  writer.writeAndSave();
-});
-
-msgTableInput.addEventListener('change', function (e) {
-  if (e.target.files.length == 0) return;
-  readData(e.target.files[0]).then(function (result) {
-    msgTableData = result;
-    updateMsgList();
-  }, handleReadError);
-});
-
-msgDataInput.addEventListener('change', function (e) {
-  if (e.target.files.length == 0) return;
-  readData(e.target.files[0]).then(function (result) {
-    msgData = result;
-    updateMsgList();
-  }, handleReadError);
-});
-
-function readData(file) {
-  return new Promise(function (resolve, reject) {
-
-    var reader = new FileReader();
-
-    reader.addEventListener('loadend', function () {
-      if (reader.readyState == FileReader.DONE) {
-        resolve(new Uint8Array(reader.result));
-      } else {
-        reject(reader.error);
-      }
-    });
-
-    reader.readAsArrayBuffer(file);
+  loadBtn.addEventListener('click', function (e) {
+    fileCount = 0;
+    msgTableInput.click();
+    msgDataInput.click();
   });
-}
+
+  saveBtn.addEventListener('click', function (e) {
+    var writer = new MessageWriter();
+    writer.writeAndSave();
+  });
+
+  msgTableInput.addEventListener('change', handleFileInput);
+  msgDataInput.addEventListener('change', handleFileInput);
+
+  function handleFileInput(e) {
+    files[fileCount++] = e.target.files[0];
+    if (fileCount == 2) {
+      editor.load(
+        files[0],
+        files[1]
+      );
+    }
+    e.target.value = ''; // Ensure that 'change' can be triggered next time, also prevents the event from firing on cancel
+  }
+  
+})();

@@ -6,6 +6,7 @@ var msgTableInput = document.getElementById('message-table-input');
 var msgDataInput = document.getElementById('message-data-input');
 var msgList = document.querySelector('.message-list');
 var loadBtn = document.querySelector('.load-btn');
+var saveBtn = document.querySelector('.save-btn');
 
 function handleReadError(error) {
   console.error('An error occured while reading: ' + error)
@@ -14,6 +15,11 @@ function handleReadError(error) {
 loadBtn.addEventListener('click', function (e) {
   msgTableInput.click();
   msgDataInput.click();
+});
+
+saveBtn.addEventListener('click', function (e) {
+  var writer = new MessageWriter();
+  writer.writeAndSave();
 });
 
 msgTableInput.addEventListener('change', function (e) {

@@ -4,11 +4,10 @@
 
 function Editor() {
 
-  var msgContainer = document.querySelector('.editor .message-container');
-  var msgIdInput = document.getElementById('message-id-input');
-  var msgTypeSelect = document.getElementById('message-type-select');
-  var msgPositionSelect = document.getElementById('message-position-select');
+  var msgText = document.querySelector('.editor .message');
+  var msgPreview = document.querySelector('.editor .message-preview');
   var msgTableList = document.querySelector('.message-list');
+  var msgHTML = document.querySelector('.message-html');
 
   var msgTableData = null;
   var msgData = null;
@@ -16,10 +15,51 @@ function Editor() {
   var msgTable = null;
   var currentIndex = -1;
 
+  var toolbar = new Toolbar();
+  var previewBuilder = new MessagePreviewBuilder();
+
+  this.current = null;
+
   // Expose these
   Object.defineProperty(this, 'msgTableData', { get: function () { return msgTableData; }});
   Object.defineProperty(this, 'msgData', { get: function () { return msgData; }});
   Object.defineProperty(this, 'msgTable', { get: function () { return msgTable; }});
+
+  document.body.addEventListener('keydown', function (e) {
+    if (currentIndex != -1) {
+      if (e.code == 'ArrowDown' && (e.ctrlKey || e.metaKey) && currentIndex < msgTable.length - 2) {
+        e.preventDefault();
+        editMessage(currentIndex + 1);
+      } else if (e.code == 'ArrowUp' && (e.ctrlKey || e.metaKey) && currentIndex > 0) {
+        e.preventDefault();
+        editMessage(currentIndex - 1);
+      }
+    }
+  });
+
+  toolbar.addEventListener('id', function (e) {
+    // TODO: find message with id and edit
+  });
+
+  toolbar.addEventListener('type', function (e) {
+    setType(e.type);
+  });
+
+  toolbar.addEventListener('position', function (e) {
+
+  });
+
+  msgText.addEventListener('input', function (e) {
+    var message = e.target.value;
+    var previewBoxes = previewBuilder.renderPreview(message);
+    while (msgPreview.firstChild) {
+      msgPreview.removeChild(msgPreview.firstChild);
+    }
+    for (let i = 0; i < previewBoxes.length; i++) {
+      msgPreview.appendChild(previewBoxes[i]);
+    }
+    this.current.message = message;
+  });
 
   function readMsgTableEntry(index) {
     return {
@@ -82,25 +122,54 @@ function Editor() {
     editMessage(0);
   }
 
-  function editMessage(msgTableIndex) {
+  var setType = (type) => {
+    this.current.type = type;
+    msgPreview.classList.remove('black-box');
+    msgPreview.classList.remove('wood-box');
+    msgPreview.classList.remove('blue-box');
+    msgPreview.classList.remove('ocarina-box');
+    msgPreview.classList.remove('no-box');
+    msgPreview.classList.remove('black-text');
+    switch (type) {
+      case 0x00: msgPreview.classList.add('black-box'); break;
+      case 0x01: msgPreview.classList.add('wood-box'); break;
+      case 0x02: msgPreview.classList.add('blue-box'); break;
+      case 0x03: msgPreview.classList.add('ocarina-box'); break;
+      case 0x04: msgPreview.classList.add('no-box'); break;
+      case 0x05: msgPreview.classList.add('no-box', 'black-text'); break;
+    }
+  }
+
+  var editMessage = (msgTableIndex) => {
     var msgTableEntry = msgTable[msgTableIndex];
+    this.current = msgTableEntry;
     currentIndex = msgTableIndex;
 
-    if (msgContainer.firstChild)
-      msgContainer.removeChild(msgContainer.firstChild);
-    msgContainer.appendChild(msgTableEntry.message);
-    msgTableEntry.message.focus();
+    // if (msgContainer.firstChild) {
+    //   msgContainer.firstChild.removeEventListener('keydown', handleMsgKeydown);
+    //   msgContainer.removeChild(msgContainer.firstChild);
+    // }
+    // msgContainer.appendChild(this.current.message);
+    // this.current.message.addEventListener('keydown', handleMsgKeydown);
+    // this.current.message.focus();
 
-    msgIdInput.value = hexString(msgTableEntry.id, 4);
-    msgTypeSelect.selectedIndex = msgTableEntry.type;
-    msgPositionSelect.selectedIndex = msgTableEntry.position;
+    msgText.value = this.current.message;
+    var previewBoxes = previewBuilder.renderPreview(this.current.message);
+    while (msgPreview.firstChild) {
+      msgPreview.removeChild(msgPreview.firstChild);
+    }
+    for (let i = 0; i < previewBoxes.length; i++) {
+      msgPreview.appendChild(previewBoxes[i]);
+    }
+    setType(this.current.type);
 
     var selected = document.querySelector('.message-list-item.selected');
     if (selected)
       selected.classList.remove('selected');
-    msgTableEntry.listItem.classList.add('selected');
+    this.current.listItem.classList.add('selected');
 
-    showMsgTableItem(msgTableEntry.listItem);
+    showMsgTableItem(this.current.listItem);
+    toolbar.update();
   }
 
   function showMsgTableItem(listItem) {
@@ -111,18 +180,6 @@ function Editor() {
     else if (offsetBottom > 0)
       msgTableList.scrollTop += offsetBottom;
   }
-
-  document.body.addEventListener('keydown', function (e) {
-    if (currentIndex != -1) {
-      if (e.code == 'ArrowDown' && (e.ctrlKey || e.metaKey) && currentIndex < msgTable.length - 2) {
-        e.preventDefault();
-        editMessage(currentIndex + 1);
-      } else if (e.code == 'ArrowUp' && (e.ctrlKey || e.metaKey) && currentIndex > 0) {
-        e.preventDefault();
-        editMessage(currentIndex - 1);
-      }
-    }
-  });
 
   this.load = function (tableFile, messagesFile) {
     var loadingCount = 2;

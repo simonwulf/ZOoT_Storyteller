@@ -3,6 +3,7 @@
 'use strict';
 
 var editor = new Editor();
+initHelp();
 
 (function () {
 
@@ -38,5 +39,4 @@ var editor = new Editor();
     }
     e.target.value = ''; // Ensure that 'change' can be triggered next time, also prevents the event from firing on cancel
   }
-
 })();

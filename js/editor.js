@@ -12,9 +12,14 @@ function Editor() {
 
   var msgTableData = null;
   var msgData = null;
-  
+
   var msgTable = null;
   var currentIndex = -1;
+
+  // Expose these
+  Object.defineProperty(this, 'msgTableData', { get: function () { return msgTableData; }});
+  Object.defineProperty(this, 'msgData', { get: function () { return msgData; }});
+  Object.defineProperty(this, 'msgTable', { get: function () { return msgTable; }});
 
   function readMsgTableEntry(index) {
     return {

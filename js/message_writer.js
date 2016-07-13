@@ -64,10 +64,10 @@ function MessageWriter() {
   }
 
   function writeTable() {
-    reallocTable(msgTableData.length + 8);
+    reallocTable(editor.msgTableData.length + 8);
     tableOffset = 0;
-    for (var i = 0; i < msgTable.length; i++) {
-      var entry = msgTable[i];
+    for (var i = 0; i < editor.msgTable.length; i++) {
+      var entry = editor.msgTable[i];
       requireTableSpace(8);
       table[tableOffset++] = (entry.id & 0xff00) >> 8;
       table[tableOffset++] = (entry.id & 0x00ff);
@@ -92,12 +92,12 @@ function MessageWriter() {
   }
 
   function writeMessages() {
-    reallocMessages(msgData.length);
+    reallocMessages(editor.msgData.length);
     messagesOffset = 0;
     newOffsets = [];
-    for (var i = 0; i < msgTable.length - 1; i++) {
+    for (var i = 0; i < editor.msgTable.length - 1; i++) {
       newOffsets[i] = messagesOffset;
-      writeNode(msgTable[i].message);
+      writeNode(editor.msgTable[i].message);
       requireMessageSpace(4);
       messages[messagesOffset++] = 0x02; // End code
       while (messagesOffset & 3)

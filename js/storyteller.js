@@ -2,6 +2,8 @@
 
 'use strict';
 
+var editor = new Editor();
+
 (function () {
 
   var msgTableInput = document.getElementById('message-table-input');
@@ -10,7 +12,6 @@
   var saveBtn = document.querySelector('.save-btn');
 
   var files = [null, null];
-  var editor = new Editor();
   var fileCount;
 
   loadBtn.addEventListener('click', function (e) {
@@ -37,5 +38,5 @@
     }
     e.target.value = ''; // Ensure that 'change' can be triggered next time, also prevents the event from firing on cancel
   }
-  
+
 })();

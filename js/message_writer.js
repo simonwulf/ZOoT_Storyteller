@@ -2,228 +2,172 @@
 
 'use strict';
 
-// ArrayBuffer.transfer polyfill
-if (typeof ArrayBuffer.transfer == 'undefined') {
-  ArrayBuffer.transfer = function (oldBuffer, newByteLength) {
-    if (arguments.length == 1)
-      newByteLength = oldBuffer.byteLength;
-    var newBuffer = new ArrayBuffer(newByteLength);
-    var obView = new Uint8Array(oldBuffer);
-    var nbView = new Uint8Array(newBuffer);
-    for (var i = 0; i < obView.length; i++) {
-      nbView[i] = obView[i];
-    }
-    return newBuffer;
-  }
-}
-
 function MessageWriter() {
 
-  // TODO: major cleanup
-
-  var tableBuffer = null;
-  var messagesBuffer = null;
-  var tableOffset = 0;
-  var messagesOffset = 0;
+  var parser = new MessageParser(writeChar, writeShortcode);
   var table = null;
   var messages = null;
   var newOffsets = null;
 
-  function reallocTable(size) {
-    tableBuffer = tableBuffer != null ?
-      ArrayBuffer.transfer(tableBuffer, size) :
-      new ArrayBuffer(size);
-    table = new Uint8Array(tableBuffer);
-  }
-
-  function reallocMessages(size) {
-    messagesBuffer = messagesBuffer != null ?
-      ArrayBuffer.transfer(messagesBuffer, size) :
-      new ArrayBuffer(size);
-    messages = new Uint8Array(messagesBuffer);
-  }
-
-  function requireMessageSpace(size) {
-    if (size > messages.length - messagesOffset) {
-      var newSize = messages.length * 1.2;
-      while (newSize < messagesOffset + size) {
-        newSize *= 1.2;
-      }
-      reallocMessages(newSize);
-    }
-  }
-
-  function requireTableSpace(size) {
-    if (size > table.length - tableOffset) {
-      var newSize = table.length * 1.2;
-      while (newSize < tableOffset + size) {
-        newSize *= 1.2;
-      }
-      reallocTable(newSize);
-    }
-  }
-
   function writeTable() {
-    reallocTable(editor.msgTableData.length + 8);
-    tableOffset = 0;
-    for (var i = 0; i < editor.msgTable.length; i++) {
-      var entry = editor.msgTable[i];
-      requireTableSpace(8);
-      table[tableOffset++] = (entry.id & 0xff00) >> 8;
-      table[tableOffset++] = (entry.id & 0x00ff);
-      table[tableOffset++] = (entry.type << 4) | (entry.position);
-      table[tableOffset++] = 0x00; // Because it's initialized to ASCII '0' (0x30)
-      table[tableOffset++] = (entry.bank);
-      table[tableOffset++] = (newOffsets[i] & 0xff0000) >> 16;
-      table[tableOffset++] = (newOffsets[i] & 0x00ff00) >> 8;
-      table[tableOffset++] = (newOffsets[i] & 0x0000ff)
+    table = new DynamicBuffer(editor.msgTableData.length + 8);
+    for (let i = 0; i < editor.msgTable.length; i++) {
+      try {
+      writeTableEntry(editor.msgTable[i], newOffsets[i]);
+      } catch (e) {
+        console.warn('failed on iteration ' + i);
+        console.log(editor.msgTable[i]);
+        break;
+      }
     }
-    requireTableSpace(8);
-    table[tableOffset++] = 0xFF;
-    table[tableOffset++] = 0xFF;
-    table[tableOffset++] = 0x00;
-    table[tableOffset++] = 0x00;
-    table[tableOffset++] = 0x00;
-    table[tableOffset++] = 0x00;
-    table[tableOffset++] = 0x00;
-    table[tableOffset++] = 0x00;
-    if (tableOffset < table.length)
-      reallocTable(tableOffset); // Shrink buffer to actual used size
+    writeTableEntry({
+      id: 0xffff,
+      type: 0x00,
+      bank: 0x00
+    }, 0x000000);
+    table.realloc(table.offset);
   }
 
   function writeMessages() {
-    reallocMessages(editor.msgData.length);
-    messagesOffset = 0;
     newOffsets = [];
-    for (var i = 0; i < editor.msgTable.length - 1; i++) {
-      newOffsets[i] = messagesOffset;
-      writeNode(editor.msgTable[i].message);
-      requireMessageSpace(4);
-      messages[messagesOffset++] = 0x02; // End code
-      while (messagesOffset & 3)
-        messages[messagesOffset++] = 0x00; // Align messages to 4 byte boundary
+    messages = new DynamicBuffer(editor.msgData.length);
+    for (let i = 0; i < editor.msgTable.length - 1; i++) {
+      newOffsets[i] = messages.offset;
+      parser.parse(editor.msgTable[i].message);
+      messages.write(0x02);
+      while (messages.offset & 3)
+        messages.write(0x00); // Align to 4 byte boundary
     }
-    if (messagesOffset < messages.length)
-      reallocMessages(messagesOffset); // Shrink buffer to actual used size
+    messages.realloc(messages.offset);
   }
 
-  function writeNode(node) {
-    if (node.nodeType == Node.TEXT_NODE) {
-      var text = node.nodeValue;
-      requireMessageSpace(text.length);
-      for (let i = 0; i < text.length; i++) {
-        messages[messagesOffset++] = translateChar(text[i]);
-      }
-    } else if (node.classList.contains('shortcode') || node.classList.contains('wait-box-break')) {
-      writeShortcode(node);
-    } else if (typeof node.dataset.color != 'undefined') {
-      requireMessageSpace(2);
-      messages[messagesOffset++] = 0x05;
-      messages[messagesOffset++] = node.dataset.color;
-      for (let i = 0; i < node.childNodes.length; i++) {
-        writeNode(node.childNodes[i]);
-      }
-      requireMessageSpace(2);
-      messages[messagesOffset++] = 0x05;
-      messages[messagesOffset++] = 0x40; // White
-    } else if (node.tagName == 'BR') {
-      messages[messagesOffset++] = 0x01;
-    } else {
-      for (let i = 0; i < node.childNodes.length; i++) {
-        writeNode(node.childNodes[i]);
-      }
-    }
+  function writeTableEntry(entry, offset) {
+    table.write((entry.id & 0xff00) >> 8);
+    table.write((entry.id & 0x00ff));
+    table.write((entry.type << 4) | (entry.position));
+    table.write(0x00);
+    table.write((entry.bank));
+    table.write((offset & 0xff0000) >> 16);
+    table.write((offset & 0x00ff00) >> 8);
+    table.write((offset & 0x0000ff))
   }
 
-  function writeShortcode(shortcode) {
-    var size;
-    var command = Number(shortcode.dataset.command);
-    var value = shortcode.querySelector('.shortcode-value');
-    if (value)
-      value = Number('0x' + value.innerText);
+  function writeChar(char) {
+
+    switch (char) {
+      case '\n': char = 0x01; break;
+      case 'À': char = 0x80; break;
+      case 'Á': char = 0x81; break;
+      case 'Â': char = 0x82; break;
+      case 'Ä': char = 0x83; break;
+      case 'Ç': char = 0x84; break;
+      case 'È': char = 0x85; break;
+      case 'É': char = 0x86; break;
+      case 'Ê': char = 0x87; break;
+      case 'Ë': char = 0x88; break;
+      case 'Ï': char = 0x89; break;
+      case 'Ô': char = 0x8a; break;
+      case 'Ö': char = 0x8b; break;
+      case 'Ù': char = 0x8c; break;
+      case 'Û': char = 0x8d; break;
+      case 'Ü': char = 0x8e; break;
+      case 'ß': char = 0x8f; break;
+      case 'à': char = 0x80; break;
+      case 'á': char = 0x91; break;
+      case 'â': char = 0x92; break;
+      case 'ä': char = 0x93; break;
+      case 'ç': char = 0x94; break;
+      case 'è': char = 0x95; break;
+      case 'é': char = 0x96; break;
+      case 'ê': char = 0x97; break;
+      case 'ë': char = 0x98; break;
+      case 'ï': char = 0x99; break;
+      case 'ô': char = 0x9a; break;
+      case 'ö': char = 0x9b; break;
+      case 'ù': char = 0x9c; break;
+      case 'û': char = 0x9d; break;
+      case 'ü': char = 0x9e; break;
+      default: char = char.charCodeAt(0); break;
+    }
+
+    messages.write(char);
+  }
+
+  function writeShortcode(command, value) {
 
     switch (command) {
-      case 0x0a: size = 1; break;
-      case 0x0b: size = 1; break;
-      case 0x0d: size = 1; break;
-      case 0x0f: size = 1; break;
-      case 0x08: size = 1; break;
-      case 0x09: size = 1; break;
-      case 0x10: size = 1; break;
-      case 0x11: size = 1; break;
-      case 0x16: size = 1; break;
-      case 0x17: size = 1; break;
-      case 0x18: size = 1; break;
-      case 0x19: size = 1; break;
-      case 0x1a: size = 1; break;
-      case 0x1b: size = 1; break;
-      case 0x1c: size = 1; break;
-      case 0x1d: size = 1; break;
-      case 0x1f: size = 1; break;
-      case 0x05: size = 2; break;
-      case 0x06: size = 2; break;
-      case 0x0c: size = 2; break;
-      case 0x0e: size = 2; break;
-      case 0x13: size = 2; break;
-      case 0x14: size = 2; break;
-      case 0x1e: size = 2; break;
-      case 0x07: size = 3; break;
-      case 0x12: size = 3; break;
-      case 0x15: size = 4; break;
-    }
-
-    requireMessageSpace(size);
-    messages[messagesOffset++] = command;
-    switch (size) {
-      case 2:
-        messages[messagesOffset++] = value;
-        break;
-      case 3:
-        messages[messagesOffset++] = (value & 0xff00) >> 8;
-        messages[messagesOffset++] = (value & 0x00ff);
-        break;
-      case 4:
-        messages[messagesOffset++] = (value & 0xff0000) >> 16;
-        messages[messagesOffset++] = (value & 0x00ff00) >> 8;
-        messages[messagesOffset++] = (value & 0x0000ff);
-        break;
+      case 'break':      messages.write(0x04); break;
+      case 'col':        messages.write(0x05); writeColor(value); break;
+      case 'spaces':     messages.write(0x06); writeHex(value, 1); break;
+      case 'link':       messages.write(0x07); writeHex(value, 2); break;
+      case 'shop':       messages.write(0x0a); break;
+      case 'waitext':    messages.write(0x0b); break;
+      case 'delay':      messages.write(0x0c); writeHex(value, 1); break;
+      case 'waitkey':    messages.write(0x0d); break;
+      case 'fadewait':   messages.write(0x0e); writeHex(value, 1); break;
+      case 'name':       messages.write(0x0f); break;
+      case 'instanton':  messages.write(0x08); break;
+      case 'instantoff': messages.write(0x09); break;
+      case 'ocarina':    messages.write(0x10); break;
+      case 'fadewait2':  messages.write(0x11); break;
+      case 'sfx':        messages.write(0x12); writeHex(value, 2); break;
+      case 'item':       messages.write(0x13); writeHex(value, 1); break;
+      case 'ldelay':     messages.write(0x14); writeHex(value, 1); break;
+      case 'loadbg':     messages.write(0x15); writeHex(value, 3); break;
+      case 'marathon':   messages.write(0x16); break;
+      case 'horcerace':  messages.write(0x17); break;
+      case 'archery':    messages.write(0x18); break;
+      case 'skulltulas': messages.write(0x19); break;
+      case 'nobskip':    messages.write(0x1a); break;
+      case '2opts':      messages.write(0x1b); break;
+      case '3opts':      messages.write(0x1c); break;
+      case 'fish':       messages.write(0x1d); break;
+      case 'minigame':   messages.write(0x1e); writeHex(value, 1); break;
+      case 'time':       messages.write(0x1f); break;
+      case 'A':          messages.write(0x9f); break;
+      case 'B':          messages.write(0xa0); break;
+      case 'C':          messages.write(0xa1); break;
+      case 'L':          messages.write(0xa2); break;
+      case 'R':          messages.write(0xa3); break;
+      case 'Z':          messages.write(0xa4); break;
+      case 'Cu':         messages.write(0xa5); break;
+      case 'Cd':         messages.write(0xa6); break;
+      case 'Cl':         messages.write(0xa7); break;
+      case 'Cr':         messages.write(0xa8); break;
+      case 'Tri':        messages.write(0xa9); break;
+      case 'Stick':      messages.write(0xaa); break;
     }
   }
 
-  function translateChar(char) {
-    switch (char) {
-      case 'À': return 0x80;
-      case 'Á': return 0x81;
-      case 'Â': return 0x82;
-      case 'Ä': return 0x83;
-      case 'Ç': return 0x84;
-      case 'È': return 0x85;
-      case 'É': return 0x86;
-      case 'Ê': return 0x87;
-      case 'Ë': return 0x88;
-      case 'Ï': return 0x89;
-      case 'Ô': return 0x8a;
-      case 'Ö': return 0x8b;
-      case 'Ù': return 0x8c;
-      case 'Û': return 0x8d;
-      case 'Ü': return 0x8e;
-      case 'ß': return 0x8f;
-      case 'à': return 0x80;
-      case 'á': return 0x91;
-      case 'â': return 0x92;
-      case 'ä': return 0x93;
-      case 'ç': return 0x94;
-      case 'è': return 0x95;
-      case 'é': return 0x96;
-      case 'ê': return 0x97;
-      case 'ë': return 0x98;
-      case 'ï': return 0x99;
-      case 'ô': return 0x9a;
-      case 'ö': return 0x9b;
-      case 'ù': return 0x9c;
-      case 'û': return 0x9d;
-      case 'ü': return 0x9e;
-      default: return char.charCodeAt(0);
+  function writeColor(color) {
+    switch (color) {
+      case 'white': color = 0x40; break;
+      case 'red': color = 0x41; break;
+      case 'green': color = 0x42; break;
+      case 'blue': color = 0x43; break;
+      case 'light-blue': color = 0x44; break;
+      case 'pink': color = 0x45; break;
+      case 'yellow': color = 0x46; break;
+      case 'black': color = 0x47; break;
+    }
+    messages.write(color);
+  }
+
+  function writeHex(hex, width) {
+    var value = Number('0x' + hex);
+    switch (width) {
+      case 1:
+        messages.write(value);
+        break;
+      case 2:
+        messages.write((value & 0xff00) >> 8);
+        messages.write((value & 0x00ff));
+        break;
+      case 3:
+        messages.write((value & 0xff0000) >> 16);
+        messages.write((value & 0x00ff00) >> 8);
+        messages.write((value & 0x0000ff));
+        break;
     }
   }
 
@@ -239,7 +183,7 @@ function MessageWriter() {
   this.writeAndSave = function () {
     writeMessages();
     writeTable();
-    saveAs([table], 'message_table.bin');
-    saveAs([messages], 'nes_message_data_static.bin');
+    saveAs([table.buffer], 'message_table.bin');
+    saveAs([messages.buffer], 'nes_message_data_static.bin');
   }
 }

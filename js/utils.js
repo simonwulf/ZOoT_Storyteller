@@ -44,3 +44,43 @@ EventDispatcher.prototype = {
     }
   }
 };
+
+// ArrayBuffer.transfer polyfill
+if (typeof ArrayBuffer.transfer == 'undefined') {
+  ArrayBuffer.transfer = function (oldBuffer, newByteLength) {
+    if (arguments.length == 1)
+      newByteLength = oldBuffer.byteLength;
+    var newBuffer = new ArrayBuffer(newByteLength);
+    var obView = new Uint8Array(oldBuffer);
+    var nbView = new Uint8Array(newBuffer);
+    for (var i = 0; i < obView.length; i++) {
+      nbView[i] = obView[i];
+    }
+    return newBuffer;
+  }
+}
+
+function DynamicBuffer(reserve) {
+
+  var buffer = null;
+  var tArray = null;
+  this.offset = 0;
+
+  Object.defineProperty(this, 'buffer', { get: function () { return buffer; }});
+
+  this.realloc = function(size) {
+    buffer = buffer != null ?
+      ArrayBuffer.transfer(buffer, size) :
+      new ArrayBuffer(size);
+    tArray = new Uint8Array(buffer);
+    this.tArray = tArray;
+  }
+
+  this.write = function(byte) {
+    if (this.offset == buffer.byteLength)
+      this.realloc(Math.ceil(buffer.byteLength * 1.2));
+    tArray[this.offset++] = byte;
+  }
+
+  this.realloc(reserve);
+}

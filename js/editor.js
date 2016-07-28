@@ -49,7 +49,7 @@ function Editor() {
 
   });
 
-  msgText.addEventListener('input', function (e) {
+  msgText.addEventListener('input', (e) => {
     var message = e.target.value;
     var previewBoxes = previewBuilder.renderPreview(message);
     while (msgPreview.firstChild) {

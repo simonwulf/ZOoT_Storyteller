@@ -69,9 +69,9 @@ function DynamicBuffer(reserve) {
   Object.defineProperty(this, 'buffer', { get: function () { return buffer; }});
 
   this.realloc = function(size) {
-    buffer = buffer != null ?
-      ArrayBuffer.transfer(buffer, size) :
-      new ArrayBuffer(size);
+    buffer = buffer == null ?
+      new ArrayBuffer(size) :
+      ArrayBuffer.transfer(buffer, size);
     tArray = new Uint8Array(buffer);
     this.tArray = tArray;
   }

@@ -8,23 +8,19 @@ function MessagePreviewBuilder() {
   var preview;
   var currentBox;
   var boxes;
-  var parser = new MessageParser(
-    function (char) {
-      preview += char;
-    },
-    renderShortcode
+  var previewParser = new MessageParser(
+    renderChar,
+    renderCommand
   );
 
   this.renderPreview = function (message) {
-
     preview = '';
     currentBox = beginBox();
     boxes = [];
 
-    parser.parse(message);
+    previewParser.parse(message);
 
     endBox();
-
     return boxes;
   }
 
@@ -64,7 +60,15 @@ function MessagePreviewBuilder() {
     return '<span class="space-strip" style="width:' + (count*2) + 'px;"></span>';
   }
 
-  function renderShortcode(command, value) {
+  function renderChar(char) {
+    switch (char) {
+      case '<': char = '&lt;'; break;
+      case '>': char = '&gt;'; break;
+    }
+    preview += char;
+  }
+
+  function renderCommand(command, value) {
 
     switch (command) {
       case 'break':

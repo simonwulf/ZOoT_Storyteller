@@ -2,7 +2,10 @@
 
 'use strict';
 
+var msgTable = new MessageTable();
+var msgTableView = new MessageTableView();
 var editor = new Editor();
+
 initHelp();
 
 (function () {
@@ -14,6 +17,7 @@ initHelp();
 
   var files = [null, null];
   var fileCount;
+  var sizeHints = [0, 0];
 
   loadBtn.addEventListener('click', function (e) {
     fileCount = 0;
@@ -23,6 +27,7 @@ initHelp();
 
   saveBtn.addEventListener('click', function (e) {
     var writer = new MessageWriter();
+    writer.hint(sizeHints[0], sizeHints[1]);
     writer.writeAndSave();
   });
 
@@ -30,7 +35,9 @@ initHelp();
   msgDataInput.addEventListener('change', handleFileInput);
 
   function handleFileInput(e) {
-    files[fileCount++] = e.target.files[0];
+    files[fileCount] = e.target.files[0];
+    sizeHints[fileCount] = files[fileCount].size;
+    fileCount++;
     if (fileCount == 2) {
       editor.load(
         files[0],

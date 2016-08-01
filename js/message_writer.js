@@ -4,19 +4,22 @@
 
 function MessageWriter() {
 
-  var parser = new MessageParser(writeChar, writeShortcode);
+  var parser = new MessageParser(writeChar, writeCommand);
   var table = null;
   var messages = null;
   var newOffsets = null;
+  var tableSizeHint = 0;
+  var messagesSizeHint = 0;
 
   function writeTable() {
-    table = new DynamicBuffer(editor.msgTableData.length + 8);
-    for (let i = 0; i < editor.msgTable.length; i++) {
+    table = new DynamicBuffer(messagesSizeHint + 8);
+    for (let i = 0; i < msgTable.length; i++) {
+      let entry = msgTable.getEntry(i);
       try {
-      writeTableEntry(editor.msgTable[i], newOffsets[i]);
+        writeTableEntry(entry, newOffsets[i]);
       } catch (e) {
         console.warn('failed on iteration ' + i);
-        console.log(editor.msgTable[i]);
+        console.log(entry);
         break;
       }
     }
@@ -30,10 +33,10 @@ function MessageWriter() {
 
   function writeMessages() {
     newOffsets = [];
-    messages = new DynamicBuffer(editor.msgData.length);
-    for (let i = 0; i < editor.msgTable.length - 1; i++) {
+    messages = new DynamicBuffer(messagesSizeHint);
+    for (let i = 0; i < msgTable.length - 1; i++) {
       newOffsets[i] = messages.offset;
-      parser.parse(editor.msgTable[i].message);
+      parser.parse(msgTable.getEntry(i).message);
       messages.write(0x02);
       while (messages.offset & 3)
         messages.write(0x00); // Align to 4 byte boundary
@@ -53,6 +56,8 @@ function MessageWriter() {
   }
 
   function writeChar(char) {
+
+    // TODO: escape characters to enable writing square brackets
 
     switch (char) {
       case '\n': char = 0x01; break;
@@ -93,7 +98,7 @@ function MessageWriter() {
     messages.write(char);
   }
 
-  function writeShortcode(command, value) {
+  function writeCommand(command, value) {
 
     switch (command) {
       case 'break':      messages.write(0x04); break;
@@ -178,6 +183,11 @@ function MessageWriter() {
     anchor.download = name;
     anchor.click();
     URL.revokeObjectURL(url);
+  }
+
+  this.hint = function (table, messages) {
+    tableSizeHint = table;
+    messagesSizeHint = messages;
   }
 
   this.writeAndSave = function () {

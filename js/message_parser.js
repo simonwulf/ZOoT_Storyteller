@@ -11,10 +11,16 @@ function MessageParser(plainCallback, commandCallback) {
   var state = STATE_PLAIN;
   var sc_name;
   var sc_value;
+  var keep_going;
+
+  this.stop = function () {
+    keep_going = false;
+  }
 
   this.parse = function (message) {
     var caret = 0;
-    while (caret < message.length) {
+    keep_going = true;
+    while (keep_going && caret < message.length) {
       var char = message[caret];
       switch (state) {
         case STATE_PLAIN:

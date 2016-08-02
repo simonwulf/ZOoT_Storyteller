@@ -27,6 +27,18 @@ function MessageTableView() {
       case 'delay':
         renderSnippetChar(' ');
         break;
+      case 'A': snippet += 'A'; break;
+      case 'B': snippet += 'B'; break;
+      case 'C': snippet += 'C'; break;
+      case 'L': snippet += 'L'; break;
+      case 'R': snippet += 'R'; break;
+      case 'Z': snippet += 'Z'; break;
+      case 'Cu': snippet += '▲'; break;
+      case 'Cd': snippet += '▼'; break;
+      case 'Cl': snippet += '◀'; break;
+      case 'Cr': snippet += '▶'; break;
+      case 'Tri': snippet += '▼'; break;
+      case 'Stick': snippet += '⫪'; break;
     }
     if (snippet.length > 25)
       endLongSnippet();

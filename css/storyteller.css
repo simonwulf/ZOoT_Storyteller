@@ -164,12 +164,13 @@ body {
 }
 
 .black-box .message-preview-box {
-  background: rgba(0, 0, 0, 0.33);
+  background: rgba(0, 0, 0, 0.6667);
   border-radius: 20px;
 }
 
 .wood-box .message-preview-box {
-
+  background: url(../images/wood-panel.png);
+  background-size: 100%;
 }
 
 .blue-box .message-valign-fix {
@@ -177,12 +178,12 @@ body {
 }
 
 .blue-box .message-preview-box {
-  background: rgba(12, 20, 56, 0.65);
+  background: rgba(0, 10, 50, 0.6667);
   width: 496px;
   height: 112px;
   border-radius: 12px;
   margin: 8px 8px 28px 8px;
-  box-shadow: 0px 0px 8px 4px rgba(12, 20, 56, 0.65);
+  box-shadow: 0px 0px 8px 4px rgba(0, 10, 50, 0.6667);
 }
 
 .blue-box .message-preview-box.tri-break {
@@ -196,7 +197,9 @@ body {
 }
 
 .ocarina-box .message-preview-box {
-
+  background: url(../images/ocarina-panel.png);
+  background-size: 100%;
+  border-radius: 4px;
 }
 
 .no-box .message-preview-box {

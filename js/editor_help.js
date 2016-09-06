@@ -22,6 +22,10 @@ function initHelp() {
         ])
     },
     {
+      title: 'More info',
+      description: '...can be found on <a href="http://wiki.spinout182.com/w/Ocarina_of_Time:_Text_Format" target="_blank">Spinout\'s wiki</a>'
+    },
+    {
       title: '[2opts]',
       description: 'Initiate a two option choice.'
     },

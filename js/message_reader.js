@@ -36,7 +36,7 @@ function MessageReader(data) {
           case 0x10: full += renderShortcode(0x10, 'ocarina'); break; // ocarina
           case 0x11: full += renderShortcode(0x11, 'fadewait2'); break; // fade-and-wait-2
           case 0x16: full += renderShortcode(0x16, 'marathon'); break; // byte-result-marathon
-          case 0x17: full += renderShortcode(0x17, 'horcerace'); break; // byte-result-horse-race
+          case 0x17: full += renderShortcode(0x17, 'horserace'); break; // byte-result-horse-race
           case 0x18: full += renderShortcode(0x18, 'archery'); break; // byte-result-horseback-archery
           case 0x19: full += renderShortcode(0x19, 'skulltulas'); break; // byte-result-skulltula-count
           case 0x1a: full += renderShortcode(0x1a, 'nobskip'); break; // prevent-b-skip

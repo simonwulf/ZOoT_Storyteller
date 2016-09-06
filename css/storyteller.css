@@ -72,7 +72,8 @@ body {
   flex-wrap: wrap;
   border-left: none;
   border-right: none;
-  padding: 5px 0;
+  padding: 5px 42px 5px 0;
+  position: relative;
 }
 
 .message-tool {
@@ -116,6 +117,17 @@ body {
   background: url(../images/editor-bg.png);
   background-size: cover;
   overflow: auto;
+  position: relative;
+}
+
+.message-preview:before {
+  display: block;
+  content: 'Preview';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .message-valign-fix {
@@ -211,6 +223,10 @@ body {
   text-shadow: none;
 }
 
+.black-text.message-preview:before {
+  color: rgba(0, 0, 0, 0.3);
+}
+
 .message-preview.black-text {
   background: #a0a0a0;
 }
@@ -256,40 +272,71 @@ body {
 }
 
 .editor-help {
-  /*flex-basis: 320px;*/
   flex-basis: 0px;
   border-left: 1px solid #cdcdcd;
-  overflow: auto;
+  transition: flex-basis ease 0.6s;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+input[type=checkbox]:checked ~ .editor-help {
+  flex-basis: 320px;
+}
+
+#editor-help-toggle-cb {
+  display: none;
+}
+
+.editor-help-toggle {
+  display: block;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.editor-help-toggle:before {
+  display: block;
+  content: '\f059';
+  color: #444f22;
+  font-size: 26px;
+  font-family: FontAwesome;
+}
+
+input[type=checkbox]:checked ~ .editor .editor-help-toggle:before {
+  content: '\f057';
 }
 
 .editor-help-list {
   list-style: none;
   padding: 0;
   margin: 0;
+  min-width: 300px;
 }
 
 .editor-help-entry {
   padding: 5px;
+  border-bottom: 1px dashed #cdcdcd;
+}
+
+.editor-help-entry:nth-child(even) {
+  background: #efefef;
 }
 
 .editor-help-label {
-  cursor: pointer;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-.editor-help-entry input[type="checkbox"] {
-  display: none;
+  font-size: 16px;
+  margin: 8px 0 10px 0;
 }
 
 .editor-help-description {
-  /*display: none;*/
   padding-left: 10px;
+  margin-bottom: 5px;
 }
 
-/*.editor-help-entry input:checked ~ .editor-help-description {
-  display: block;
-}*/
+.editor-help-description .value-list {
+  padding-left: 1em;
+  list-style-type: square;
+}

@@ -120,7 +120,7 @@ function MessageWriter() {
       case 'ldelay':     messages.write(0x14); writeHex(value, 1); break;
       case 'loadbg':     messages.write(0x15); writeHex(value, 3); break;
       case 'marathon':   messages.write(0x16); break;
-      case 'horcerace':  messages.write(0x17); break;
+      case 'horserace':  messages.write(0x17); break;
       case 'archery':    messages.write(0x18); break;
       case 'skulltulas': messages.write(0x19); break;
       case 'nobskip':    messages.write(0x1a); break;

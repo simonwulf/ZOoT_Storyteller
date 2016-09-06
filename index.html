@@ -5,6 +5,7 @@
   <link rel="stylesheet" type="text/css" href="css/normalize.css">
   <link rel="stylesheet" type="text/css" href="css/storyteller.css">
   <link rel="stylesheet" type="text/css" href="css/buttons.css">
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
   <meta charset="utf-8">
 </head>
 <body>
@@ -16,6 +17,7 @@
     <button class="save-btn">Save and download</button>
   </header>
   <div class="main-surface">
+    <input id="editor-help-toggle-cb" type="checkbox">
     <ol class="message-list"></ol>
     <div class="editor">
       <div class="message-toolbar">
@@ -38,16 +40,7 @@
             <option>Bottom</option>
           </select>
         </label>
-        <!-- <div class="message-tool color-tool">Set color:
-          <button class="color-white" disabled></button>
-          <button class="color-red" disabled></button>
-          <button class="color-green" disabled></button>
-          <button class="color-blue" disabled></button>
-          <button class="color-light-blue" disabled></button>
-          <button class="color-pink" disabled></button>
-          <button class="color-yellow" disabled></button>
-          <button class="color-black" disabled></button>
-        </div> -->
+        <label class="editor-help-toggle" for="editor-help-toggle-cb"></label>
       </div>
       <div class="message-surface">
         <div class="message-preview"></div>

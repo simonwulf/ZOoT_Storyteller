@@ -28,15 +28,9 @@ function Toolbar() {
     if (message == null) {
       msgTypeSelect.setAttribute('disabled', '');
       msgPositionSelect.setAttribute('disabled', '');
-      // for (let i = 0; i < colorButtons.length; i++) {
-      //   colorButtons[i].setAttribute('disabled', '');
-      // }
     } else {
       msgTypeSelect.removeAttribute('disabled');
       msgPositionSelect.removeAttribute('disabled');
-      // for (let i = 0; i < colorButtons.length; i++) {
-      //   colorButtons[i].removeAttribute('disabled');
-      // }
     }
 
     msgIdInput.value = hexString(message.id, 4);

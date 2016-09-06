@@ -2,7 +2,11 @@
 
 'use strict';
 
+var msgTable = new MessageTable();
+var msgTableView = new MessageTableView();
 var editor = new Editor();
+
+initHelp();
 
 (function () {
 
@@ -13,6 +17,7 @@ var editor = new Editor();
 
   var files = [null, null];
   var fileCount;
+  var sizeHints = [0, 0];
 
   loadBtn.addEventListener('click', function (e) {
     fileCount = 0;
@@ -22,6 +27,7 @@ var editor = new Editor();
 
   saveBtn.addEventListener('click', function (e) {
     var writer = new MessageWriter();
+    writer.hint(sizeHints[0], sizeHints[1]);
     writer.writeAndSave();
   });
 
@@ -29,7 +35,9 @@ var editor = new Editor();
   msgDataInput.addEventListener('change', handleFileInput);
 
   function handleFileInput(e) {
-    files[fileCount++] = e.target.files[0];
+    files[fileCount] = e.target.files[0];
+    sizeHints[fileCount] = files[fileCount].size;
+    fileCount++;
     if (fileCount == 2) {
       editor.load(
         files[0],
@@ -38,5 +46,4 @@ var editor = new Editor();
     }
     e.target.value = ''; // Ensure that 'change' can be triggered next time, also prevents the event from firing on cancel
   }
-
 })();

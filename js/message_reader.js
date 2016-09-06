@@ -3,23 +3,16 @@
 'use strict';
 
 function MessageReader(data) {
-  
+
   var msgData = data;
   var currentColor;
 
   this.readMessage = function (offset, length) {
-    
+
     var end = offset + length;
-    var element = document.createElement('div');
     var full = '';
     var snippet = '';
     var longSnippet = false;
-
-    currentColor = 'white';
-
-    element.setAttribute('contenteditable', '');
-    element.setAttribute('spellCheck', false);
-    element.classList.add('message');
 
     while (offset < end) {
 
@@ -30,27 +23,27 @@ function MessageReader(data) {
         switch (msgData[offset]) {
           case 0x00: break;
           case 0x03: break;
-            
-          case 0x01: full += '<br>'; break;
-            
+
+          case 0x01: full += "\n"; break;
+
           case 0x02: break; // end
-          case 0x0a: full += renderShortcode(0x0a, 'shp'); break; // shop-keep-open
-          case 0x0b: full += renderShortcode(0x0b, 'we'); break; // wait-external
-          case 0x0d: full += renderShortcode(0x0d, 'wkc'); break; // wait-keypress-continue
-          case 0x0f: full += renderShortcode(0x0f, 'Link'); break; // player-name
-          case 0x08: full += renderShortcode(0x08, 'in1'); break; // instant-on
-          case 0x09: full += renderShortcode(0x09, 'in0'); break; // instant-off
-          case 0x10: full += renderShortcode(0x10, 'oca'); break; // ocarina
-          case 0x11: full += renderShortcode(0x11, 'fdw2'); break; // fade-and-wait-2
-          case 0x16: full += renderShortcode(0x16, 'scm'); break; // byte-result-marathon
-          case 0x17: full += renderShortcode(0x17, 'schr'); break; // byte-result-horse-race
-          case 0x18: full += renderShortcode(0x18, 'scha'); break; // byte-result-horseback-archery
-          case 0x19: full += renderShortcode(0x19, 'scs'); break; // byte-result-skulltula-count
-          case 0x1a: full += renderShortcode(0x1a, 'pbs'); break; // prevent-b-skip
-          case 0x1b: full += renderShortcode(0x1b, 'o2'); break; // option-two
-          case 0x1c: full += renderShortcode(0x1c, 'o3'); break; // option-three
-          case 0x1d: full += renderShortcode(0x1d, 'scf'); break; // byte-result-fish
-          case 0x1f: full += renderShortcode(0x1f, 'tod'); break; // current-time
+          case 0x0a: full += renderShortcode(0x0a, 'shop'); break; // shop-keep-open
+          case 0x0b: full += renderShortcode(0x0b, 'waitext'); break; // wait-external
+          case 0x0d: full += renderShortcode(0x0d, 'waitkey'); break; // wait-keypress-continue
+          case 0x0f: full += renderShortcode(0x0f, 'name'); break; // player-name
+          case 0x08: full += renderShortcode(0x08, 'instanton'); break; // instant-on
+          case 0x09: full += renderShortcode(0x09, 'instantoff'); break; // instant-off
+          case 0x10: full += renderShortcode(0x10, 'ocarina'); break; // ocarina
+          case 0x11: full += renderShortcode(0x11, 'fadewait2'); break; // fade-and-wait-2
+          case 0x16: full += renderShortcode(0x16, 'marathon'); break; // byte-result-marathon
+          case 0x17: full += renderShortcode(0x17, 'horserace'); break; // byte-result-horse-race
+          case 0x18: full += renderShortcode(0x18, 'archery'); break; // byte-result-horseback-archery
+          case 0x19: full += renderShortcode(0x19, 'skulltulas'); break; // byte-result-skulltula-count
+          case 0x1a: full += renderShortcode(0x1a, 'nobskip'); break; // prevent-b-skip
+          case 0x1b: full += renderShortcode(0x1b, '2opts'); break; // option-two
+          case 0x1c: full += renderShortcode(0x1c, '3opts'); break; // option-three
+          case 0x1d: full += renderShortcode(0x1d, 'fish'); break; // byte-result-fish
+          case 0x1f: full += renderShortcode(0x1f, 'time'); break; // current-time
 
           case 0x04: full += renderBoxBreak(); break; // wait-keypress-break
           case 0x05: full += renderColor(msgData[++offset]); break;
@@ -83,24 +76,28 @@ function MessageReader(data) {
     if (longSnippet)
       snippet = snippet.substr(0, snippet.length-3) + '...';
 
-    element.innerHTML = full;
     return {
-      full: element,
+      full: full,
       snippet: snippet
     }
   };
 
   function renderShortcode(command, name, value) {
-    var code = '<span class="shortcode" contenteditable="false" data-command="' + command + '">'
-    code += '[' + name;
+    // var code = '<span class="shortcode" contenteditable="false" data-command="' + command + '">'
+    // code += '[' + name;
+    // if (arguments.length > 2)
+    //   code += ':' + '<span class="shortcode-value">' + value + '</span>';
+    // code += ']</span>';
+    var code = '[' + name;
     if (arguments.length > 2)
-      code += ':' + '<span class="shortcode-value" contenteditable>' + value + '</span>';
-    code += ']</span>';
+      code += ':' + value;
+    code += ']';
     return code;
   }
 
   function renderBoxBreak() {
-    return '<span class="wait-box-break" data-command="0x04"></span>';
+    // return '<span class="wait-box-break" data-command="0x04"></span>';
+    return "[break]";
   }
 
   function renderColor(color) {
@@ -116,50 +113,50 @@ function MessageReader(data) {
       case 0x46: colorName = 'yellow'; break;
       case 0x47: colorName = 'black'; break;
     }
-    if (colorName != currentColor) {
-      if (currentColor != 'white')
-        output += '</span>';
-      if (colorName != 'white')
-        output += '<span class="color-' + colorName + '" data-color="' + color + '">';
-      currentColor = colorName;
-    }
-    return output;
+    // if (colorName != currentColor) {
+    //   if (currentColor != 'white')
+    //     output += '</span>';
+    //   if (colorName != 'white')
+    //     output += '<span class="color-' + colorName + '" data-color="' + color + '">';
+    //   currentColor = colorName;
+    // }
+    return renderShortcode(0x05, 'col', colorName);
   }
 
   function renderSpaceStrip(amount) {
-    return renderShortcode(0x06, 'sp', hexString(amount, 2));
+    return renderShortcode(0x06, 'spaces', hexString(amount, 2));
   }
 
   function renderMsgLink(msgId) {
-    return renderShortcode(0x07, 'lnk', hexString(msgId, 4));
+    return renderShortcode(0x07, 'link', hexString(msgId, 4));
   }
 
   function renderDelay(delay) {
-    return renderShortcode(0x0c, 'dly', hexString(delay, 2));
+    return renderShortcode(0x0c, 'delay', hexString(delay, 2));
   }
 
   function renderFadeAndWait(delay) {
-    return renderShortcode(0x0e, 'fdw', hexString(delay, 2));
+    return renderShortcode(0x0e, 'fadewait', hexString(delay, 2));
   }
 
   function renderAudioCue(effect) {
-    return renderShortcode(0x12, 'aud', hexString(effect, 4));
+    return renderShortcode(0x12, 'sfx', hexString(effect, 4));
   }
 
   function renderItemIcon(item) {
-    return renderShortcode(0x13, 'itm', hexString(item, 2));
+    return renderShortcode(0x13, 'item', hexString(item, 2));
   }
 
   function renderLetterDelay(delay) {
-    return renderShortcode(0x14, 'ldly', hexString(delay, 2));
+    return renderShortcode(0x14, 'ldelay', hexString(delay, 2));
   }
 
   function renderBGLoader(background) {
-    return renderShortcode(0x15, 'lbg', hexString(background, 6));
+    return renderShortcode(0x15, 'loadbg', hexString(background, 6));
   }
 
   function renderResult(minigame) {
-    return renderShortcode(0x1e, 'mgs', hexString(minigame, 2));
+    return renderShortcode(0x1e, 'minigame', hexString(minigame, 2));
   }
 
   function renderSpecial(char) {
@@ -206,9 +203,9 @@ function MessageReader(data) {
       case 0xa6: return renderShortcode(0xa6, 'Cd');
       case 0xa7: return renderShortcode(0xa7, 'Cl');
       case 0xa8: return renderShortcode(0xa8, 'Cr');
-      case 0xa9: return renderShortcode(0xa9, 'Dn');
-      case 0xaa: return renderShortcode(0xaa, 'T');
-      case 0xab: return renderShortcode(0xab, '+');
+      case 0xa9: return renderShortcode(0xa9, 'Tri');
+      case 0xaa: return renderShortcode(0xaa, 'Stick');
+      // case 0xab: return renderShortcode(0xab, 'Dpad');
     }
   }
 }

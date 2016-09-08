@@ -53,6 +53,7 @@ function Editor() {
   });
 
   var setType = (type) => {
+    console.log('Set type: ' + type);
     this.current.type = type;
     msgPreview.classList.remove('black-box');
     msgPreview.classList.remove('wood-box');
@@ -70,10 +71,8 @@ function Editor() {
     }
   }
 
-  this.editMessage = function (entryIndex) {
-    var previous = this.current;
-    this.current = msgTable.getEntry(entryIndex);
-    currentIndex = entryIndex;
+  var _editMessage = (entry) => {
+    this.current = entry;
 
     msgText.value = this.current.message;
     var previewBoxes = previewBuilder.renderPreview(this.current.message);
@@ -84,13 +83,19 @@ function Editor() {
       msgPreview.appendChild(previewBoxes[i]);
     }
     setType(this.current.type);
+    toolbar.update(this.current);
+  }
+
+  this.editMessage = function (entryIndex) {
+    var previous = this.current;
+    currentIndex = entryIndex;
+
+    _editMessage(msgTable.getEntry(entryIndex));
+    msgTableView.showMsgTableItem(this.current.listItem);
 
     if (previous)
       previous.listItem.classList.remove('selected');
     this.current.listItem.classList.add('selected');
-
-    msgTableView.showMsgTableItem(this.current.listItem);
-    toolbar.update();
   }
 
   this.load = function (tableFile, messagesFile) {
@@ -118,4 +123,18 @@ function Editor() {
       onSuccess();
     }, readError);
   }
+
+  _editMessage({
+    id: 0,
+    type: 0,
+    position: 0,
+    message:
+      '[col:light-blue]Hey! Listen![col:white]\n' +
+      'Welcome to [col:yellow]ZOoT Storyteller[col:white]![break][spaces:1b]To get started, push the\n' +
+      '[spaces:26]button above labeled\n' +
+      '[spaces:0d][col:light-blue]Load message [col:blue]table[col:light-blue] and [col:blue]data[col:white].[break]You\'ll need to extract the table and\n' +
+      'data files from an Ocarina of Time\n' +
+      'ROM. If you feel lost, check out\n' +
+      'Spinout\'s wiki (link in help drawer)'
+  });
 }

@@ -23,8 +23,7 @@ function Toolbar() {
     this.dispatchEvent('position');
   });
 
-  this.update = function () {
-    var message = editor.current;
+  this.update = function (message) {
     if (message == null) {
       msgTypeSelect.setAttribute('disabled', '');
       msgPositionSelect.setAttribute('disabled', '');

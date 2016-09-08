@@ -17,8 +17,8 @@ function initHelp() {
     {
       title: 'Keyboard shortcuts',
       description: makeList([
-          'ctrl/cmd+shift+alt+down: select next message',
-          'ctrl/cmd+shift+alt+up: select previous message'
+          'ctrl/cmd+alt+down: select next message',
+          'ctrl/cmd+alt+up: select previous message'
         ])
     },
     {

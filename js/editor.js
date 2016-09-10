@@ -93,7 +93,7 @@ function Editor() {
     _editMessage(msgTable.getEntry(entryIndex));
     msgTableView.showMsgTableItem(this.current.listItem);
 
-    if (previous)
+    if (previous && previous.listItem)
       previous.listItem.classList.remove('selected');
     this.current.listItem.classList.add('selected');
   }
@@ -111,6 +111,7 @@ function Editor() {
       if (--loadingCount == 0) {
         msgTable.load(tableData, messagesData);
         editor.editMessage(0);
+        document.querySelector('.save-btn').removeAttribute('disabled');
       }
     }
 
